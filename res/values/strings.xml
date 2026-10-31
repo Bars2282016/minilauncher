@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Мини-лаунчер</string>
+    <string name="search_hint">Поиск приложений</string>
+    <string name="empty_list">Ничего не найдено</string>
+    <string name="action_open">Открыть</string>
+    <string name="action_info">О приложении</string>
+    <string name="action_uninstall">Удалить</string>
+    <string name="cannot_launch">Не удалось запустить</string>
+    <string name="cannot_uninstall">Не удалось удалить</string>
+</resources>

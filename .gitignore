@@ -1,0 +1,19 @@
+# Сборка
+build/
+dist/
+*.apk
+
+# Ключи подписи — никогда не коммитить
+*.keystore
+*.jks
+
+# IDE и ОС
+.idea/
+*.iml
+.vscode/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Локальные пути
+local.properties
