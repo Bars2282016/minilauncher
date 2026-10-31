@@ -5,7 +5,15 @@ param(
     [string]$Sdk = "C:\Android\Sdk",
     [string]$BuildTools = "35.0.0",
     [string]$Platform = "android-34",
-    [string]$Jdk = ""
+    [string]$Jdk = "",
+    [int]$VersionCode = 1,
+    [string]$VersionName = "1.0",
+    # Release signing: -Release -Keystore <path.jks> -StorePass <pass>
+    # (or set MINILAUNCHER_KEYSTORE_PASS in the environment)
+    [switch]$Release,
+    [string]$Keystore = "",
+    [string]$StorePass = $env:MINILAUNCHER_KEYSTORE_PASS,
+    [string]$KeyAlias = "minilauncher"
 )
 
 $ErrorActionPreference = "Stop"
@@ -51,7 +59,7 @@ Write-Host "2/6 aapt2 link"
 & $aapt2 link -o (Join-Path $build "base.apk") -I $androidJar --manifest (Join-Path $root "AndroidManifest.xml") `
     -R (Join-Path $build "res.zip") --java (Join-Path $build "gen") `
     --min-sdk-version 23 --target-sdk-version 34 `
-    --version-code 1 --version-name "1.0" --auto-add-overlay
+    --version-code $VersionCode --version-name $VersionName --auto-add-overlay
 if ($LASTEXITCODE -ne 0) { throw "aapt2 link failed: $LASTEXITCODE" }
 
 Write-Host "3/6 javac"
@@ -83,18 +91,29 @@ try {
 if ($LASTEXITCODE -ne 0) { throw "zipalign failed: $LASTEXITCODE" }
 
 Write-Host "6/6 sign"
-$ks = Join-Path $root "debug.keystore"
-if (-not (Test-Path $ks)) {
-    & $keytool -genkeypair -keystore $ks -storepass android -keypass android `
-        -alias androiddebugkey -keyalg RSA -keysize 2048 -validity 10000 `
-        -dname "CN=Android Debug,O=Android,C=US"
-    if ($LASTEXITCODE -ne 0) { throw "keytool failed: $LASTEXITCODE" }
-}
+if ($Release) {
+    if (-not $Keystore) { throw "Release build: pass -Keystore <path to .jks>." }
+    if (-not $StorePass) { throw "Release build: pass -StorePass <password> or set MINILAUNCHER_KEYSTORE_PASS." }
+    if (-not (Test-Path $Keystore)) { throw "Keystore not found: $Keystore" }
 
-$apk = Join-Path $dist "minilauncher-debug.apk"
-& $apksigner sign --ks $ks --ks-pass pass:android --key-pass pass:android `
-    --ks-key-alias androiddebugkey --out $apk (Join-Path $build "aligned.apk")
-if ($LASTEXITCODE -ne 0) { throw "apksigner failed: $LASTEXITCODE" }
+    $apk = Join-Path $dist "minilauncher-release.apk"
+    & $apksigner sign --ks $Keystore --ks-pass "pass:$StorePass" --key-pass "pass:$StorePass" `
+        --ks-key-alias $KeyAlias --out $apk (Join-Path $build "aligned.apk")
+    if ($LASTEXITCODE -ne 0) { throw "apksigner failed: $LASTEXITCODE" }
+} else {
+    $ks = Join-Path $root "debug.keystore"
+    if (-not (Test-Path $ks)) {
+        & $keytool -genkeypair -keystore $ks -storepass android -keypass android `
+            -alias androiddebugkey -keyalg RSA -keysize 2048 -validity 10000 `
+            -dname "CN=Android Debug,O=Android,C=US"
+        if ($LASTEXITCODE -ne 0) { throw "keytool failed: $LASTEXITCODE" }
+    }
+
+    $apk = Join-Path $dist "minilauncher-debug.apk"
+    & $apksigner sign --ks $ks --ks-pass pass:android --key-pass pass:android `
+        --ks-key-alias androiddebugkey --out $apk (Join-Path $build "aligned.apk")
+    if ($LASTEXITCODE -ne 0) { throw "apksigner failed: $LASTEXITCODE" }
+}
 
 & $apksigner verify --print-certs $apk | Select-Object -First 3
 

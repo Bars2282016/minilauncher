@@ -3,6 +3,8 @@
 Домашний экран для Android без единой сторонней библиотеки. Только `android.*` из фреймворка,
 поэтому APK весит ~21 КБ вместо десятков мегабайт.
 
+![Мини-лаунчер](docs/screenshot.png)
+
 - Пакет: `io.github.bars2282016.minilauncher`
 - minSdk 23 (Android 6+), targetSdk 34
 - Язык: Java 8, сборка без Gradle
@@ -25,6 +27,7 @@ res/layout/main.xml                          часы + поиск + GridView
 res/layout/item_app.xml                      иконка + подпись
 res/drawable/ic_launcher.xml                 иконка приложения (vector)
 src/io/github/bars2282016/minilauncher/      MainActivity, AppEntry
+docs/screenshot.png                          скриншот для README
 build.ps1                                    сборка без Gradle
 ```
 
@@ -47,9 +50,28 @@ powershell -ExecutionPolicy Bypass -File .\build.ps1
 Шаги внутри: `aapt2 compile` → `aapt2 link` → `javac --release 8` → `d8` → вставка
 `classes.dex` в APK → `zipalign -f 4` → `apksigner` (создаёт `debug.keystore` при первом запуске).
 
-Результат: `dist\minilauncher-debug.apk`.
+Результат: `dist\minilauncher-debug.apk`, подписан отладочным ключом (`debug.keystore` создаётся
+при первом запуске и в git не попадает).
 
-Параметры: `-Sdk <путь>`, `-BuildTools <версия>`, `-Platform <android-XX>`, `-Jdk <путь>`.
+### Release-сборка
+
+Для публикации нужен отдельный ключ подписи (лежит вне репозитория, например
+`C:\Users\<ник>\.android-keys\minilauncher-release.jks`):
+
+```powershell
+$env:MINILAUNCHER_KEYSTORE_PASS = "пароль от ключа"
+powershell -File .\build.ps1 -Release -Keystore C:\Users\<ник>\.android-keys\minilauncher-release.jks `
+    -VersionCode 2 -VersionName "1.1"
+```
+
+Результат: `dist\minilauncher-release.apk`.
+
+Ключ и пароль храни отдельно от репозитория и не теряй: без них нельзя выпустить обновление,
+которое Android поставит поверх старой версии.
+
+Параметры: `-Sdk <путь>`, `-BuildTools <версия>`, `-Platform <android-XX>`, `-Jdk <путь>`,
+`-VersionCode <N>`, `-VersionName <x.y>`, `-Release`, `-Keystore <путь>`, `-StorePass <пароль>`,
+`-KeyAlias <алиас>`.
 
 ## Установка
 
