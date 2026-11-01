@@ -1,5 +1,7 @@
 # Mini Launcher
 
+From the creator: Yo, I might be on 4pda soon, and by the way, once I hit 5 downloads, I’m starting a Telegram channel!!!
+
 A home screen for Android with zero third-party libraries. Only `android.*` from the framework,
 so the APK is ~29 KB instead of tens of megabytes.
 
