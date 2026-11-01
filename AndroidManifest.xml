@@ -9,11 +9,21 @@
     <!-- Без этого Android 11+ не показывает системный диалог удаления чужого пакета -->
     <uses-permission android:name="android.permission.REQUEST_DELETE_PACKAGES" />
 
+    <!-- Нужно, чтобы открыть системные «Часы»: OnePlus требует его для SHOW_ALARMS -->
+    <uses-permission android:name="com.android.alarm.permission.SET_ALARM" />
+
     <!-- Пакеты, которые видны лаунчеру на Android 11+ -->
     <queries>
         <intent>
             <action android:name="android.intent.action.MAIN" />
             <category android:name="android.intent.category.LAUNCHER" />
+        </intent>
+        <!-- Чтобы тап по часам мог открыть системное приложение «Часы» -->
+        <intent>
+            <action android:name="android.intent.action.SHOW_ALARMS" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.SET_ALARM" />
         </intent>
     </queries>
 

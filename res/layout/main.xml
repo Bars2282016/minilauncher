@@ -4,14 +4,17 @@
     android:layout_height="match_parent"
     android:background="@color/bg"
     android:orientation="vertical"
-    android:paddingLeft="14dp"
-    android:paddingRight="14dp">
+    android:paddingStart="14dp"
+    android:paddingEnd="14dp">
 
     <TextView
         android:id="@+id/clock"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="18dp"
+        android:clickable="true"
+        android:contentDescription="@string/open_clock"
+        android:focusable="true"
         android:includeFontPadding="false"
         android:textColor="@color/text"
         android:textSize="44sp"
@@ -25,11 +28,11 @@
         android:background="@drawable/bg_search"
         android:hint="@string/search_hint"
         android:imeOptions="actionSearch"
+        android:importantForAutofill="no"
         android:inputType="text"
         android:maxLines="1"
-        android:paddingLeft="14dp"
-        android:paddingRight="14dp"
-        android:singleLine="true"
+        android:paddingStart="14dp"
+        android:paddingEnd="14dp"
         android:textColor="@color/text"
         android:textColorHint="@color/text_dim"
         android:textSize="15sp" />
@@ -45,8 +48,9 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:clipToPadding="false"
+            android:columnWidth="84dp"
             android:horizontalSpacing="6dp"
-            android:numColumns="4"
+            android:numColumns="auto_fit"
             android:paddingBottom="16dp"
             android:scrollbars="none"
             android:verticalSpacing="10dp" />
@@ -56,7 +60,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:gravity="center"
-            android:text="@string/empty_list"
+            android:text="@string/empty_filter"
             android:textColor="@color/text_dim"
             android:textSize="15sp"
             android:visibility="gone" />

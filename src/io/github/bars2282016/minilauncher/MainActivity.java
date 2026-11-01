@@ -15,6 +15,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.provider.AlarmClock;
 import android.provider.Settings;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -30,6 +31,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.text.Collator;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -59,6 +61,8 @@ public class MainActivity extends Activity {
     private final SimpleDateFormat clockFormat = new SimpleDateFormat("HH:mm", Locale.getDefault());
 
     private boolean receiverRegistered = false;
+    private boolean scanning = false;
+    private boolean rescanQueued = false;
 
     private final Runnable clockTick = new Runnable() {
         @Override
@@ -71,6 +75,11 @@ public class MainActivity extends Activity {
     private final BroadcastReceiver packagesReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
+            String action = intent == null ? null : intent.getAction();
+            // «Заменено» уже приходит вместе с ADDED/REMOVED — второй скан не нужен.
+            if (Intent.ACTION_PACKAGE_REPLACED.equals(action)) {
+                return;
+            }
             loadApps();
         }
     };
@@ -87,6 +96,13 @@ public class MainActivity extends Activity {
 
         adapter = new AppAdapter();
         grid.setAdapter(adapter);
+
+        clockView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                openClock();
+            }
+        });
 
         grid.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -123,6 +139,15 @@ public class MainActivity extends Activity {
             }
         });
 
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(Intent.ACTION_PACKAGE_ADDED);
+        filter.addAction(Intent.ACTION_PACKAGE_REMOVED);
+        filter.addAction(Intent.ACTION_PACKAGE_CHANGED);
+        filter.addAction(Intent.ACTION_PACKAGE_REPLACED);
+        filter.addDataScheme("package");
+        registerReceiver(packagesReceiver, filter);
+        receiverRegistered = true;
+
         updateClock();
         loadApps();
     }
@@ -132,32 +157,31 @@ public class MainActivity extends Activity {
         super.onResume();
         handler.removeCallbacks(clockTick);
         handler.post(clockTick);
-
-        // Пока лаунчер был на паузе, приёмник отписан — приложения могли
-        // установить/удалить (например, из Play). Перечитываем список.
-        if (!allApps.isEmpty()) {
-            loadApps();
-        }
-
-        if (!receiverRegistered) {
-            IntentFilter filter = new IntentFilter();
-            filter.addAction(Intent.ACTION_PACKAGE_ADDED);
-            filter.addAction(Intent.ACTION_PACKAGE_REMOVED);
-            filter.addAction(Intent.ACTION_PACKAGE_CHANGED);
-            filter.addAction(Intent.ACTION_PACKAGE_REPLACED);
-            filter.addDataScheme("package");
-            registerReceiver(packagesReceiver, filter);
-            receiverRegistered = true;
-        }
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         handler.removeCallbacks(clockTick);
+    }
+
+    @Override
+    protected void onDestroy() {
+        handler.removeCallbacksAndMessages(null);
         if (receiverRegistered) {
             unregisterReceiver(packagesReceiver);
             receiverRegistered = false;
+        }
+        super.onDestroy();
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        // Повторное «Домой» на уже открытом лаунчере: показываем полный список.
+        if (search.getText().length() > 0) {
+            search.setText("");
+            hideKeyboard();
         }
     }
 
@@ -165,13 +189,18 @@ public class MainActivity extends Activity {
     public void onBackPressed() {
         if (search.getText().length() > 0) {
             search.setText("");
+            hideKeyboard();
             return;
         }
+        hideKeyboard();
+        // На домашнем экране «назад» ничего не делает.
+    }
+
+    private void hideKeyboard() {
         InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-        if (imm != null) {
+        if (imm != null && search.getWindowToken() != null) {
             imm.hideSoftInputFromWindow(search.getWindowToken(), 0);
         }
-        // На домашнем экране «назад» ничего не делает.
     }
 
     private void updateClock() {
@@ -180,17 +209,43 @@ public class MainActivity extends Activity {
         }
     }
 
+    /**
+     * Перечитывает список в фоне. Одновременно работает только один скан:
+     * повторный вызов ставит задачу в очередь, а не запускает второй поток.
+     */
     private void loadApps() {
+        if (scanning) {
+            rescanQueued = true;
+            return;
+        }
+        scanning = true;
+
         new Thread(new Runnable() {
             @Override
             public void run() {
-                final List<AppEntry> loaded = queryApps();
+                List<AppEntry> loaded = null;
+                try {
+                    loaded = queryApps();
+                } catch (Throwable ignored) {
+                    // Ниже сообщим пользователю, что список прочитать не удалось.
+                }
+                final List<AppEntry> result = loaded;
+
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
-                        allApps.clear();
-                        allApps.addAll(loaded);
-                        applyFilter(search.getText().toString());
+                        scanning = false;
+                        if (result != null) {
+                            allApps.clear();
+                            allApps.addAll(result);
+                            applyFilter(search.getText().toString());
+                        } else {
+                            Toast.makeText(MainActivity.this, R.string.cannot_load, Toast.LENGTH_SHORT).show();
+                        }
+                        if (rescanQueued) {
+                            rescanQueued = false;
+                            loadApps();
+                        }
                     }
                 });
             }
@@ -212,40 +267,82 @@ public class MainActivity extends Activity {
                 continue;
             }
             String pkg = info.activityInfo.packageName;
-            if (self.equals(pkg)) {
+            if (pkg == null || self.equals(pkg)) {
                 continue;
             }
-            CharSequence rawLabel = info.loadLabel(pm);
-            String label = rawLabel == null ? pkg : rawLabel.toString().trim();
-            if (label.length() == 0) {
-                label = pkg;
+            try {
+                CharSequence rawLabel = info.loadLabel(pm);
+                String label = rawLabel == null ? pkg : rawLabel.toString().trim();
+                if (label.length() == 0) {
+                    label = pkg;
+                }
+                ComponentName component = new ComponentName(pkg, info.activityInfo.name);
+                result.add(new AppEntry(label, pkg, component, info.loadIcon(pm)));
+            } catch (Throwable ignored) {
+                // Битый пакет или иконка: пропускаем только его, остальные остаются.
             }
-            ComponentName component = new ComponentName(pkg, info.activityInfo.name);
-            result.add(new AppEntry(label, pkg, component, info.loadIcon(pm)));
         }
 
+        // Сортировка по правилам русской локали: «Ё» идёт после «Е», а не перед «А».
+        final Collator collator = Collator.getInstance(new Locale("ru", "RU"));
         Collections.sort(result, new Comparator<AppEntry>() {
             @Override
             public int compare(AppEntry left, AppEntry right) {
-                return left.label.compareToIgnoreCase(right.label);
+                int byLabel = collator.compare(left.label, right.label);
+                if (byLabel != 0) {
+                    return byLabel;
+                }
+                return left.packageName.compareToIgnoreCase(right.packageName);
             }
         });
         return result;
     }
 
     private void applyFilter(String query) {
-        String needle = query == null ? "" : query.trim().toLowerCase(Locale.getDefault());
+        // Locale.ROOT, а не Locale.getDefault(): иначе в турецкой локали
+        // «I» превращается в «ı» и поиск по латинице перестаёт работать.
+        String needle = query == null ? "" : query.trim().toLowerCase(Locale.ROOT);
         visibleApps.clear();
         for (int i = 0; i < allApps.size(); i++) {
             AppEntry entry = allApps.get(i);
             if (needle.length() == 0
-                    || entry.label.toLowerCase(Locale.getDefault()).contains(needle)
-                    || entry.packageName.toLowerCase(Locale.getDefault()).contains(needle)) {
+                    || entry.label.toLowerCase(Locale.ROOT).contains(needle)
+                    || entry.packageName.toLowerCase(Locale.ROOT).contains(needle)) {
                 visibleApps.add(entry);
             }
         }
         adapter.notifyDataSetChanged();
-        emptyView.setVisibility(visibleApps.isEmpty() ? View.VISIBLE : View.GONE);
+        if (visibleApps.isEmpty()) {
+            emptyView.setText(allApps.isEmpty() ? R.string.empty_all : R.string.empty_filter);
+            emptyView.setVisibility(View.VISIBLE);
+        } else {
+            emptyView.setVisibility(View.GONE);
+        }
+    }
+
+    private void openClock() {
+        Intent showAlarms = new Intent(AlarmClock.ACTION_SHOW_ALARMS);
+        showAlarms.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        if (showAlarms.resolveActivity(getPackageManager()) != null) {
+            try {
+                startActivity(showAlarms);
+                return;
+            } catch (SecurityException ignored) {
+                // Some vendor clock apps demand SET_ALARM even for SHOW_ALARMS.
+            } catch (ActivityNotFoundException ignored) {
+                // Пробуем следующий вариант.
+            }
+        }
+
+        Intent setAlarm = new Intent(AlarmClock.ACTION_SET_ALARM);
+        setAlarm.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        try {
+            startActivity(setAlarm);
+        } catch (SecurityException ignored) {
+            Toast.makeText(this, R.string.cannot_open_clock, Toast.LENGTH_SHORT).show();
+        } catch (ActivityNotFoundException ignored) {
+            Toast.makeText(this, R.string.cannot_open_clock, Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void launch(AppEntry entry) {
@@ -314,6 +411,11 @@ public class MainActivity extends Activity {
         }
     }
 
+    private static final class ViewHolder {
+        ImageView icon;
+        TextView label;
+    }
+
     private final class AppAdapter extends BaseAdapter {
 
         private final LayoutInflater inflater = LayoutInflater.from(MainActivity.this);
@@ -336,14 +438,19 @@ public class MainActivity extends Activity {
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
             View view = convertView;
+            ViewHolder holder;
             if (view == null) {
                 view = inflater.inflate(R.layout.item_app, parent, false);
+                holder = new ViewHolder();
+                holder.icon = (ImageView) view.findViewById(R.id.item_icon);
+                holder.label = (TextView) view.findViewById(R.id.item_label);
+                view.setTag(holder);
+            } else {
+                holder = (ViewHolder) view.getTag();
             }
             AppEntry entry = visibleApps.get(position);
-            ImageView icon = (ImageView) view.findViewById(R.id.item_icon);
-            TextView label = (TextView) view.findViewById(R.id.item_label);
-            icon.setImageDrawable(entry.icon);
-            label.setText(entry.label);
+            holder.icon.setImageDrawable(entry.icon);
+            holder.label.setText(entry.label);
             return view;
         }
     }
