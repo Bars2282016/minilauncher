@@ -3,7 +3,7 @@
 Домашний экран для Android без единой сторонней библиотеки. Только `android.*` из фреймворка,
 поэтому APK весит ~29 КБ вместо десятков мегабайт.
 
-![Мини-лаунчер](docs/screenshot.png)
+![Мини-лаунчер](docs/screenshot-home.png)
 
 | Поиск | Тап по часам открывает «Часы» |
 |---|---|
@@ -27,7 +27,7 @@
 
 Все снимки сняты на OnePlus Nord N10 (Android 11):
 
-- [Главный экран](docs/screenshot.png) — часы, поиск, сетка приложений
+- [Главный экран](docs/screenshot-home.png) — часы, поиск, сетка приложений
 - [Поиск](docs/screenshot-search.png) — запрос «you» оставляет только YouTube и YT Music
 - [Тап по часам](docs/screenshot-clock.png) — открывается системное приложение «Часы»
 
@@ -51,7 +51,7 @@ res/layout/main.xml                          часы + поиск + GridView
 res/layout/item_app.xml                      иконка + подпись
 res/drawable/ic_launcher.xml                 иконка приложения (vector)
 src/io/github/bars2282016/minilauncher/      MainActivity, AppEntry
-docs/screenshot.png                          скриншот для README
+docs/screenshot-home.png                     главный экран
 docs/screenshot-search.png                   поиск
 docs/screenshot-clock.png                    тап по часам
 build.ps1                                    сборка без Gradle
