@@ -3,11 +3,13 @@
 Домашний экран для Android без единой сторонней библиотеки. Только `android.*` из фреймворка,
 поэтому APK весит ~29 КБ вместо десятков мегабайт.
 
-![Мини-лаунчер](docs/screenshot-home.png)
+<p align="center">
+  <img src="docs/screenshot-home.png" width="330" alt="Главный экран">
+</p>
 
 | Поиск | Тап по часам открывает «Часы» |
-|---|---|
-| ![Поиск](docs/screenshot-search.png) | ![Часы](docs/screenshot-clock.png) |
+|:---:|:---:|
+| <img src="docs/screenshot-search.png" width="300" alt="Поиск"> | <img src="docs/screenshot-clock.png" width="300" alt="Часы"> |
 
 - Пакет: `io.github.bars2282016.minilauncher`
 - minSdk 23 (Android 6+), targetSdk 34
