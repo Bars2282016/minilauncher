@@ -143,6 +143,16 @@ Permissions:
 No `INTERNET` permission: the launcher has no network access and sends nothing anywhere.
 No data collection, no analytics.
 
+## Supporting the project
+
+The launcher is free, with no ads and no trackers. If you find it useful, you can support
+development with a voluntary donation:
+
+**[YooMoney — 4100119087477749](https://yoomoney.ru/to/4100119087477749)**
+
+Donations go toward test devices and time spent on new releases. Nothing is pushed: the app
+stays completely free.
+
 ## License
 
 MIT — see [LICENSE](LICENSE).
