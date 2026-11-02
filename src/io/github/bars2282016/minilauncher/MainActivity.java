@@ -157,6 +157,12 @@ public class MainActivity extends Activity {
         super.onResume();
         handler.removeCallbacks(clockTick);
         handler.post(clockTick);
+        // Возврат с другого приложения не должен оставлять клавиатуру на домашнем экране:
+        // при пустом поиске снимаем фокус и прячем IME.
+        if (search.getText().length() == 0) {
+            search.clearFocus();
+            hideKeyboard();
+        }
     }
 
     @Override
