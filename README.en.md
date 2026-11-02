@@ -49,6 +49,12 @@ Samsung Galaxy Tab A7 Lite (Android 14):
 - [Home screen](docs/screenshot-tablet.png) — clock, search, 6 columns in portrait
 - [Landscape](docs/screenshot-tablet-landscape.png) — 11 columns, grid across the full width
 
+## Links
+
+- [Download the latest version](https://github.com/Bars2282016/minilauncher/releases/latest)
+- [YouTube channel Bars Studio](https://www.youtube.com/@bars22820)
+- [Source code and issues](https://github.com/Bars2282016/minilauncher)
+
 ## Features
 
 - Grid of all installed apps; the number of columns adapts to the screen width.

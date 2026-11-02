@@ -50,6 +50,12 @@ Samsung Galaxy Tab A7 Lite (Android 14):
 - [Главный экран](docs/screenshot-tablet.png) — часы, поиск, 6 колонок в портрете
 - [Альбомная ориентация](docs/screenshot-tablet-landscape.png) — 11 колонок, сетка на всю ширину
 
+## Ссылки
+
+- [Скачать последнюю версию](https://github.com/Bars2282016/minilauncher/releases/latest)
+- [YouTube-канал Bars Studio](https://www.youtube.com/@bars22820)
+- [Исходный код и issues](https://github.com/Bars2282016/minilauncher)
+
 ## Что умеет
 
 - Сетка всех установленных приложений, число колонок подстраивается под ширину экрана.
