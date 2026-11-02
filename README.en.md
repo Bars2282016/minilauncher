@@ -15,6 +15,10 @@ so the APK is ~29 KB instead of tens of megabytes.
 |:---:|:---:|
 | <img src="docs/screenshot-search.png" width="300" alt="Search"> | <img src="docs/screenshot-clock.png" width="300" alt="Clock"> |
 
+<p align="center">
+  <img src="docs/screenshot-tablet.png" width="300" alt="Samsung Galaxy Tab A7 Lite, Android 14">
+</p>
+
 - Package: `io.github.bars2282016.minilauncher`
 - minSdk 23 (Android 6+), targetSdk 34
 - Language: Java 8, built without Gradle
@@ -23,18 +27,27 @@ so the APK is ~29 KB instead of tens of megabytes.
 
 - **Minimum: Android 6.0** (API 23, Marshmallow).
 - **Target:** Android 14 (`targetSdk 34`).
-- **Tested on: Android 11** — OnePlus Nord N10 (BE2029), real device: installation, home screen,
-  search, launching apps, uninstalling via long press, tap on the clock.
+- **Tested on a phone: Android 11** — OnePlus Nord N10 (BE2029), real device: installation,
+  home screen, search, launching apps, uninstalling via long press, tap on the clock.
+- **Tested on a tablet: Android 14** — Samsung Galaxy Tab A7 Lite (SM-T220): installation,
+  home screen, search by name and package, launching apps, "App info", uninstall dialog,
+  tap on the clock, scrolling and screen rotation.
+  The grid adapts: 6 columns in portrait, 11 in landscape.
 - Android 6–10 should work too, but has not been tested on real hardware: everything added
   after API 23 is either behind a version check or simply ignored by the system.
 
 ## Screenshots
 
-All shots taken on a OnePlus Nord N10 (Android 11):
+OnePlus Nord N10 (Android 11):
 
 - [Home screen](docs/screenshot-home.png) — clock, search, app grid
 - [Search](docs/screenshot-search.png) — typing "you" leaves only YouTube and YT Music
 - [Tap the clock](docs/screenshot-clock.png) — opens the system Clock app
+
+Samsung Galaxy Tab A7 Lite (Android 14):
+
+- [Home screen](docs/screenshot-tablet.png) — clock, search, 6 columns in portrait
+- [Landscape](docs/screenshot-tablet-landscape.png) — 11 columns, grid across the full width
 
 ## Features
 

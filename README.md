@@ -15,6 +15,10 @@
 |:---:|:---:|
 | <img src="docs/screenshot-search.png" width="300" alt="Поиск"> | <img src="docs/screenshot-clock.png" width="300" alt="Часы"> |
 
+<p align="center">
+  <img src="docs/screenshot-tablet.png" width="300" alt="Samsung Galaxy Tab A7 Lite, Android 14">
+</p>
+
 - Пакет: `io.github.bars2282016.minilauncher`
 - minSdk 23 (Android 6+), targetSdk 34
 - Язык: Java 8, сборка без Gradle
@@ -23,19 +27,28 @@
 
 - **Минимум: Android 6.0** (API 23, Marshmallow).
 - **Целевая версия:** Android 14 (`targetSdk 34`).
-- **Проверено на: Android 11** — OnePlus Nord N10 (BE2029), реальное устройство:
+- **Проверено на телефоне: Android 11** — OnePlus Nord N10 (BE2029), реальное устройство:
   установка, домашний экран, поиск, запуск приложений, удаление через долгое нажатие,
   тап по часам.
+- **Проверено на планшете: Android 14** — Samsung Galaxy Tab A7 Lite (SM-T220):
+  установка, домашний экран, поиск по названию и пакету, запуск приложений,
+  «О приложении», диалог удаления, тап по часам, прокрутка и поворот экрана.
+  Сетка подстраивается: 6 колонок в портрете, 11 в альбоме.
 - На Android 6–10 код тоже рассчитан, но вживую не тестировался: всё, что появилось
   позже API 23, либо обёрнуто в проверку, либо просто игнорируется системой.
 
 ## Скриншоты
 
-Все снимки сняты на OnePlus Nord N10 (Android 11):
+OnePlus Nord N10 (Android 11):
 
 - [Главный экран](docs/screenshot-home.png) — часы, поиск, сетка приложений
 - [Поиск](docs/screenshot-search.png) — запрос «you» оставляет только YouTube и YT Music
 - [Тап по часам](docs/screenshot-clock.png) — открывается системное приложение «Часы»
+
+Samsung Galaxy Tab A7 Lite (Android 14):
+
+- [Главный экран](docs/screenshot-tablet.png) — часы, поиск, 6 колонок в портрете
+- [Альбомная ориентация](docs/screenshot-tablet-landscape.png) — 11 колонок, сетка на всю ширину
 
 ## Что умеет
 
